@@ -1,0 +1,18 @@
+#! /usr/bin/env nix-shell
+#! nix-shell ../shell.nix -i bash
+
+trap cleanup EXIT
+
+function cleanup() {
+  status=$?
+  fusermount -u "$SECRETS_DIR/decrypted"
+  exit $status
+}
+
+BIN_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+SECRETS_DIR="$BIN_DIR/../secrets"
+
+cryfs "$SECRETS_DIR/encrypted" "$SECRETS_DIR/decrypted"
+morph "$@"
+
+# vim: set ft=sh :

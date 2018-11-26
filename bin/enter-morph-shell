@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+BIN_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+
+# These two lines regenerate Nix GC roots for the shell expression; this is
+# useful as it effectively keeps Nix from garbage collecting your
+# most-recently-used instantiation of the morph shell expression, which may save
+# you some time spent re-downloading things between uses
+rm -f "$BIN_DIR"/../.nix-gc-roots/shell.drv*
+nix-instantiate "$BIN_DIR"/../shell.nix --indirect --add-root "$BIN_DIR"/../.nix-gc-roots/shell.drv > /dev/null
+nix-shell "$BIN_DIR"/../shell.nix
+
+# vim: set ft=sh :

@@ -1,0 +1,39 @@
+#!/usr/bin/env nix-shell
+#! nix-shell -i bash -p git nix-prefetch-git
+
+set -e
+BIN_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+
+if [ "$NIX_REMOTE" == "" ]; then
+  export NIX_REMOTE=daemon
+fi
+
+INPUT_BRANCH=$1
+
+declare -a VALID_BRANCHES=("master" "unstable" "18.09" "18.03" "17.09" "17.03")
+
+VALID_BRANCH=no
+for branch in "${VALID_BRANCHES[@]}"; do
+  if [ "$branch" = "$INPUT_BRANCH" ]; then
+    VALID_BRANCH=yes
+    break
+  fi
+done
+
+if [ "$VALID_BRANCH" = "yes" ]; then
+  if [ "$INPUT_BRANCH" = "master" ]; then
+    REPO="nixpkgs"
+    HEAD="master"
+  else
+    REPO="nixpkgs-channels"
+    HEAD="nixos-$INPUT_BRANCH"
+  fi
+  nix-prefetch-git --rev "refs/heads/$HEAD" "https://github.com/NixOS/$REPO.git" | jq "{url: (\"https://github.com/NixOS/$REPO/archive/\" + .rev + \".tar.gz\"), rev: .rev, date: .date, sha256: .sha256}" >  "${BIN_DIR}/../pins/nixpkgs-$1.json"
+else
+  echo "usage: $0 <branch>"
+  echo "valid branches: ${VALID_BRANCHES[*]}"
+  exit 1
+fi
+
+
+# vim: set ft=sh :

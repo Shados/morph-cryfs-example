@@ -1,0 +1,19 @@
+#!/usr/bin/env nix-shell
+#! nix-shell -i bash -p git nix-prefetch-git
+
+set -e
+BIN_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+
+if [ "$NIX_REMOTE" == "" ]; then
+  export NIX_REMOTE=daemon
+fi
+
+if [ "$1" == "" ]; then
+  VERSION=master
+else
+  VERSION=$1
+fi
+
+nix-prefetch-git --rev "refs/heads/$VERSION" https://github.com/dbcdk/morph.git > "${BIN_DIR}/../pins/morph.json"
+
+# vim: set ft=sh :

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -e
+
+BIN_DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+
+{
+  # We need to be in the main project directory for this
+  cd "$BIN_DIR"
+  cd ..
+
+  # These two lines regenerate Nix GC roots for the shell expression; this is
+  # useful as it effectively keeps Nix from garbage collecting your
+  # most-recently-used instantiation of the morph shell expression, which may save
+  # you some time spent re-downloading things between uses
+  rm -f .nix-gc-roots/decrypted-shell.drv*
+  nix-instantiate decrypted-shell.nix --indirect --add-root .nix-gc-roots/decrypted-shell.drv > /dev/null
+  nix-shell decrypted-shell.nix
+
+  # vim: set ft=sh :
+}
